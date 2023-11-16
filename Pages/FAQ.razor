@@ -1,0 +1,65 @@
+@page "/FAQ"
+@using BlazorApp.Data
+
+@inject RegentService RegentService
+
+<h3>FAQ</h3>
+
+@if (_regents != null)
+{
+    <p>Hvor mange regenter er der i listen?</p>
+    <ul>
+        <li>@_regents.Count</li>
+    </ul>
+
+    <p>Hvem regerede længst? (Og hvor længe?)</p>
+    <ul>
+        <li>@_longestReignRegent.Name (@_longestReignRegent.GetYearsActive() år)</li>
+    </ul>
+
+    <p>Hvilken slægt regerede længst? (Og hvor længe?)</p>
+    <ul>
+        <li>@_longestReignHouse.House (@_longestReignHouse.YearsActive år)</li>
+    </ul>
+
+    <p>Hvilket navn har været mest populært?</p>
+    <ul>
+        <li>@_mostPopularName</li>
+    </ul>
+
+    <p>Hvor længe har Danmark været uden regent?</p>
+    <ul>
+        <li>@_yearsWithoutRegent år</li>
+    </ul>
+}
+else
+{
+    <div class="d-flex justify-content-center">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+}
+
+@code {
+
+    private List<RegentEntry>? _regents;
+    private RegentEntry? _longestReignRegent;
+    private (string House, int YearsActive) _longestReignHouse;
+    private string? _mostPopularName;
+    private int? _yearsWithoutRegent;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _regents = await RegentService.GetRegentsAsync();
+        _longestReignRegent = _regents?.MaxBy(r => r.GetYearsActive())!;
+        _longestReignHouse = _regents.GroupBy(r => r.House)
+            .Select(g => (House: g.Key, YearsActive: g.Sum(r => r.GetYearsActive())))
+            .MaxBy(h => h.YearsActive)!;
+        _mostPopularName = _regents.GroupBy(r => r.GetFirstName()).MaxBy(g => g.Count())!.Key;
+
+        _yearsWithoutRegent = _regents.Where(r => r.Name.Equals("Interregnum", StringComparison.InvariantCultureIgnoreCase)).Sum(r => r.GetYearsActive());
+
+    }
+
+}
