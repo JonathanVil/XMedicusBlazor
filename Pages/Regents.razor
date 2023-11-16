@@ -1,0 +1,63 @@
+@page "/Regents"
+@using BlazorApp.Data
+
+@inject RegentService RegentService
+
+@if (_regents != null)
+{
+    <PageTitle>@_regents.Count exciting regents</PageTitle>
+}
+
+<h3>Regents</h3>
+
+@if (_regents == null)
+{
+    <div class="d-flex justify-content-center">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+}
+else
+{
+    <table class="table">
+        <thead>
+        <tr>
+            <th scope="col">Id</th>
+            <th scope="col">Name</th>
+            <th scope="col">Years</th>
+            <th scope="col">House</th>
+            <th scope="col">Years active</th>
+            <th scope="col">Start year</th>
+            <th scope="col">End year</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var regent in _regents)
+        {
+            <tr>
+                <th scope="row">@regent.Id</th>
+                <td>@regent.Name</td>
+                <td>@regent.Years</td>
+                <td>@regent.House</td>
+                <td>@regent.GetYearsActive()</td>
+                <td>@regent.StartYear</td>
+                <td>@regent.EndYear</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+
+    
+}
+
+@code {
+
+    private List<RegentEntry>? _regents;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _regents = await RegentService.GetRegentsAsync();
+    }
+
+}
